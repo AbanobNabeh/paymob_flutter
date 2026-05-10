@@ -15,13 +15,18 @@ class Paymob {
   }) async {
     final service = PaymobService(config);
 
-    // جيب الـ payment token
     final paymentKey = await service.getPaymentToken(
       order: order,
       billing: billing,
     );
 
-    // افتح الـ WebView
+    if (!context.mounted) {
+      return const PaymentResult(
+        status: PaymentStatus.failure,
+        errorMessage: 'Context is no longer valid',
+      );
+    }
+
     PaymentResult? result;
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -34,7 +39,7 @@ class Paymob {
     );
 
     return result ??
-        PaymentResult(
+        const PaymentResult(
           status: PaymentStatus.failure,
           errorMessage: 'Unknown error',
         );
