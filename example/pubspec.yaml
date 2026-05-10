@@ -1,0 +1,18 @@
+name: paymob_flutter_example
+description: Example app for paymob_flutter package.
+version: 1.0.0
+
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  paymob_flutter:
+    path: ../
+
+flutter:
+  uses-material-design: true

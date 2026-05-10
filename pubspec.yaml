@@ -1,0 +1,19 @@
+name: paymob_flutter
+description: A Flutter SDK for Paymob payment gateway. Supports Card, Wallet, and Kiosk payments.
+version: 0.0.1
+homepage: https://github.com/AbanobNabeh/paymob_flutter
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.4.0
+  webview_flutter: ^4.4.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
