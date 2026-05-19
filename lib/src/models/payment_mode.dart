@@ -1,0 +1,4 @@
+enum PaymentMode {
+  api,
+  webview,
+}

@@ -47,7 +47,6 @@ class _PaymobPaymentWidgetState extends State<PaymobPaymentWidget> {
   }
 
   void _handleCallback(String url) {
-    // Paymob بيرجع success أو failure في الـ URL
     if (url.contains('success=true')) {
       final transactionId = Uri.parse(url).queryParameters['id'];
       widget.onResult(PaymentResult(

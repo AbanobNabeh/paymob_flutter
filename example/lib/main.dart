@@ -35,9 +35,31 @@ class _ProductScreenState extends State<ProductScreen> {
 
   final _config = PaymobConfig(
     apiKey: 'YOUR_API_KEY',
-    integrationId: 123456,
-    iframeId: 789,
-    isSandbox: true,
+    integrationId: 123123,
+    walletIntegrationId: 123123,
+    kioskIntegrationId: null,
+    iframeId: 123123,
+    isSandbox: false,
+    paymentMode: PaymentMode.webview,
+  );
+
+  final _order = PaymobOrder(
+    amount: 299.99,
+    currency: 'EGP',
+    items: [
+      OrderItem(
+        name: 'Wireless Noise-Cancelling Headphones',
+        amount: 299.99,
+        quantity: 1,
+      ),
+    ],
+  );
+
+  final _billing = BillingData(
+    firstName: 'Abanob',
+    lastName: 'Nabeh',
+    email: 'Abanobnabeh5@example.com',
+    phone: '+20128661021',
   );
 
   Future<void> _checkout() async {
@@ -50,38 +72,37 @@ class _ProductScreenState extends State<ProductScreen> {
       final result = await Paymob.pay(
         context: context,
         config: _config,
-        order: PaymobOrder(
-          amount: 299.99,
-          currency: 'EGP',
-          items: [
-            OrderItem(
-              name: 'Wireless Noise-Cancelling Headphones',
-              amount: 299.99,
-              quantity: 1,
-            ),
-          ],
-        ),
-        billing: BillingData(
-          firstName: 'Abanob',
-          lastName: 'Nabeh',
-          email: 'Abanobnabeh5@example.com',
-          phone: '+20128661021',
-        ),
+        order: _order,
+        billing: _billing,
       );
+
+      if (!mounted) return;
 
       setState(() {
         _isSuccess = result.isSuccess;
-        _resultMessage = result.isSuccess
-            ? 'Payment successful!\nTransaction ID: ${result.transactionId}'
-            : 'Payment failed: ${result.errorMessage}';
+
+        if (result.isSuccess) {
+          _resultMessage =
+              'Payment successful!\nTransaction ID: ${result.transactionId}';
+        } else if (result.isCancelled) {
+          _resultMessage = null;
+          _isSuccess = null;
+        } else if (result.isPending) {
+          _resultMessage =
+              'Pending payment\nReference: ${result.transactionId}';
+          _isSuccess = null;
+        } else {
+          _resultMessage = 'Payment failed: ${result.errorMessage}';
+        }
       });
     } on PaymobException catch (e) {
+      if (!mounted) return;
       setState(() {
         _isSuccess = false;
         _resultMessage = 'Error: ${e.message}';
       });
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -117,7 +138,6 @@ class _ProductScreenState extends State<ProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image
             Container(
               width: double.infinity,
               height: 280,
@@ -162,14 +182,11 @@ class _ProductScreenState extends State<ProductScreen> {
                 ],
               ),
             ),
-
-            // Product Info
             Container(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Brand
                   const Text(
                     'SONY',
                     style: TextStyle(
@@ -180,8 +197,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-
-                  // Name
                   const Text(
                     'Wireless Noise-Cancelling\nHeadphones',
                     style: TextStyle(
@@ -192,17 +207,16 @@ class _ProductScreenState extends State<ProductScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // Rating
                   Row(
                     children: [
                       ...List.generate(
-                          5,
-                          (i) => Icon(
-                                i < 4 ? Icons.star : Icons.star_half,
-                                color: Colors.amber,
-                                size: 18,
-                              )),
+                        5,
+                        (i) => Icon(
+                          i < 4 ? Icons.star : Icons.star_half,
+                          color: Colors.amber,
+                          size: 18,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       const Text(
                         '4.5  (2.3k reviews)',
@@ -211,8 +225,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Price
                   Row(
                     children: [
                       const Text(
@@ -252,12 +264,8 @@ class _ProductScreenState extends State<ProductScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Divider
                   Divider(color: Colors.grey.shade200),
                   const SizedBox(height: 16),
-
-                  // Description
                   const Text(
                     'Description',
                     style: TextStyle(
@@ -277,8 +285,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Result Message
                   if (_resultMessage != null)
                     Container(
                       width: double.infinity,
@@ -287,12 +293,16 @@ class _ProductScreenState extends State<ProductScreen> {
                       decoration: BoxDecoration(
                         color: _isSuccess == true
                             ? Colors.green.shade50
-                            : Colors.red.shade50,
+                            : _isSuccess == null
+                                ? Colors.orange.shade50
+                                : Colors.red.shade50,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _isSuccess == true
                               ? Colors.green.shade200
-                              : Colors.red.shade200,
+                              : _isSuccess == null
+                                  ? Colors.orange.shade200
+                                  : Colors.red.shade200,
                         ),
                       ),
                       child: Text(
@@ -301,14 +311,14 @@ class _ProductScreenState extends State<ProductScreen> {
                         style: TextStyle(
                           color: _isSuccess == true
                               ? Colors.green.shade700
-                              : Colors.red.shade700,
+                              : _isSuccess == null
+                                  ? Colors.orange.shade700
+                                  : Colors.red.shade700,
                           fontSize: 13,
                           height: 1.5,
                         ),
                       ),
                     ),
-
-                  // Checkout Button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -348,8 +358,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // Powered by
                   Center(
                     child: Text(
                       'Secured by Paymob',
