@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paymob_flutter/paymob_flutter.dart';
-import 'package:paymob_flutter/src/models/wallet_type.dart';
 
 class WalletPaymentScreen extends StatefulWidget {
   final PaymobConfig config;

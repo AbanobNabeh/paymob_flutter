@@ -55,7 +55,7 @@ class _PaymobPaymentWidgetState extends State<PaymobPaymentWidget> {
       ));
       Navigator.of(context).pop();
     } else if (url.contains('success=false')) {
-      widget.onResult(PaymentResult(
+      widget.onResult(const PaymentResult(
         status: PaymentStatus.failure,
         errorMessage: 'Payment failed',
       ));
@@ -71,7 +71,7 @@ class _PaymobPaymentWidgetState extends State<PaymobPaymentWidget> {
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
-            widget.onResult(PaymentResult(
+            widget.onResult(const PaymentResult(
               status: PaymentStatus.failure,
               errorMessage: 'Cancelled by user',
             ));

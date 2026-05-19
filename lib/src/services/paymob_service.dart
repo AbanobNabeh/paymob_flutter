@@ -108,7 +108,7 @@ class PaymobService {
     required WalletType walletType,
   }) async {
     if (config.walletIntegrationId == null) {
-      throw PaymobException(message: 'walletIntegrationId is required');
+      throw const PaymobException(message: 'walletIntegrationId is required');
     }
     final authToken = await _getAuthToken();
     final orderId = await _registerOrder(authToken, order);
@@ -135,7 +135,7 @@ class PaymobService {
     required BillingData billing,
   }) async {
     if (config.kioskIntegrationId == null) {
-      throw PaymobException(message: 'kioskIntegrationId is required');
+      throw const PaymobException(message: 'kioskIntegrationId is required');
     }
     final authToken = await _getAuthToken();
     final orderId = await _registerOrder(authToken, order);
@@ -160,7 +160,7 @@ class PaymobService {
         data['id']?.toString() ??
         '';
     if (reference.isEmpty) {
-      throw PaymobException(message: 'No bill reference returned');
+      throw const PaymobException(message: 'No bill reference returned');
     }
     return reference;
   }

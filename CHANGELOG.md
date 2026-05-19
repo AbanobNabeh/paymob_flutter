@@ -1,4 +1,4 @@
-## 0.1.1
+## 0.1.2
 
 ### Added
 - Wallet payment support (Vodafone Cash, Orange Money, Etisalat Cash, WE Pay)

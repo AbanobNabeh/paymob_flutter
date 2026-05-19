@@ -3,7 +3,7 @@ import 'models/paymob_config.dart';
 import 'models/paymob_order.dart';
 import 'models/billing_data.dart';
 import 'models/payment_result.dart';
-import 'models/payment_mode.dart';
+
 import 'services/paymob_service.dart';
 import 'ui/card/card_payment_screen.dart';
 import 'ui/wallet/wallet_payment_screen.dart';
@@ -19,8 +19,9 @@ class Paymob {
     required PaymobOrder order,
     required BillingData billing,
   }) async {
-    if (!context.mounted)
+    if (!context.mounted) {
       return PaymentResult.failed('Context is no longer valid');
+    }
 
     if (!config.showMethodSheet) {
       return payWithCard(
@@ -55,8 +56,9 @@ class Paymob {
     required PaymobOrder order,
     required BillingData billing,
   }) async {
-    if (!context.mounted)
+    if (!context.mounted) {
       return PaymentResult.failed('Context is no longer valid');
+    }
 
     if (config.isWebView) {
       return _payCardWithWebView(
@@ -87,8 +89,9 @@ class Paymob {
         order: order,
         billing: billing,
       );
-      if (!context.mounted)
+      if (!context.mounted) {
         return PaymentResult.failed('Context is no longer valid');
+      }
 
       PaymentResult? result;
       await Navigator.of(context).push(MaterialPageRoute(
@@ -110,8 +113,9 @@ class Paymob {
     required PaymobOrder order,
     required BillingData billing,
   }) async {
-    if (!context.mounted)
+    if (!context.mounted) {
       return PaymentResult.failed('Context is no longer valid');
+    }
     PaymentResult? result;
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => WalletPaymentScreen(
@@ -130,8 +134,9 @@ class Paymob {
     required PaymobOrder order,
     required BillingData billing,
   }) async {
-    if (!context.mounted)
+    if (!context.mounted) {
       return PaymentResult.failed('Context is no longer valid');
+    }
     PaymentResult? result;
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => KioskPaymentScreen(

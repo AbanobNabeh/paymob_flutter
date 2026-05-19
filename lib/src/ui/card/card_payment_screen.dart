@@ -40,9 +40,9 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
   void _detectCardType(String value) {
     final clean = value.replaceAll(' ', '');
     String type = '';
-    if (clean.startsWith('4'))
+    if (clean.startsWith('4')) {
       type = 'visa';
-    else if (RegExp(r'^5[1-5]').hasMatch(clean))
+    } else if (RegExp(r'^5[1-5]').hasMatch(clean))
       type = 'mastercard';
     else if (RegExp(r'^3[47]').hasMatch(clean)) type = 'amex';
     setState(() => _cardType = type);
