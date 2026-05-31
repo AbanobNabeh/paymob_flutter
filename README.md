@@ -18,25 +18,25 @@ A Flutter SDK for Paymob payment gateway. Supports **Card** (WebView & Direct AP
 
 ### 💳 Card API
 
-![Card API Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/Card_API.gif)
+![Card API Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/main/demo/Card_API.gif)
 
 ---
 
 ### 🌐 Card WebView
 
-![Card WebView Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/Card_webview.gif)
+![Card WebView Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/main/demo/Card_webview.gif)
 
 ---
 
 ### 📱 Wallet Payment
 
-![Wallet Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/Wallet.gif)
+![Wallet Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/main/demo/Wallet.gif)
 
 ---
 
 ### 🏧 Kiosk Payment
 
-![Kiosk Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/kiosk.gif)
+![Kiosk Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/main/demo/kiosk.gif)
 
 ## ✨ What's New in 0.1.3
 
