@@ -45,23 +45,6 @@ class _PaymobPaymentWidgetState extends State<PaymobPaymentWidget> {
       ..loadRequest(Uri.parse(url));
   }
 
-  void _handleCallback(String url) {
-    if (url.contains('success=true')) {
-      final transactionId = Uri.parse(url).queryParameters['id'];
-      widget.onResult(PaymentResult(
-        status: PaymentStatus.success,
-        transactionId: transactionId,
-      ));
-      Navigator.of(context).pop();
-    } else if (url.contains('success=false')) {
-      widget.onResult(const PaymentResult(
-        status: PaymentStatus.failure,
-        errorMessage: 'Payment failed',
-      ));
-      Navigator.of(context).pop();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
