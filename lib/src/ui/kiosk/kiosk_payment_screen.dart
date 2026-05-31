@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paymob_flutter/paymob_flutter.dart';
+import 'package:paymob_flutter/src/services/paymob_service.dart';
 
 class KioskPaymentScreen extends StatefulWidget {
   final PaymobConfig config;
@@ -116,7 +117,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen>
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C63FF).withOpacity(0.12),
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Center(
@@ -150,7 +151,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen>
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(Icons.error_outline_rounded,
@@ -202,7 +203,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(Icons.check_circle_outline_rounded,
@@ -238,7 +239,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -261,7 +262,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.2),
+                          color: Colors.green.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
@@ -399,7 +400,7 @@ class _KioskPaymentScreenState extends State<KioskPaymentScreen>
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C63FF).withOpacity(0.12),
+                        color: const Color(0xFF6C63FF).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(

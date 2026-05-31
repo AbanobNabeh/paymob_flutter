@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paymob_flutter/paymob_flutter.dart';
+import 'package:paymob_flutter/src/services/paymob_service.dart';
 
 class WalletPaymentScreen extends StatefulWidget {
   final PaymobConfig config;
@@ -306,9 +307,9 @@ class _WalletPaymentScreenState extends State<WalletPaymentScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(isDark ? 0.1 : 0.08),
+        color: Colors.amber.withValues(alpha: isDark ? 0.1 : 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -365,7 +366,7 @@ class _WalletCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: style.gradient[0].withOpacity(0.35),
+                    color: style.gradient[0].withValues(alpha: 0.35),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )
@@ -419,7 +420,7 @@ class _AmountBadge extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C63FF).withOpacity(0.12),
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.receipt_long_outlined,
@@ -481,7 +482,7 @@ class _PayButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: colors[0].withOpacity(0.35),
+              color: colors[0].withValues(alpha: 0.35),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),

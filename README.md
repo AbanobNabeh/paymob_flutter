@@ -16,24 +16,41 @@ A Flutter SDK for Paymob payment gateway. Supports **Card** (WebView & Direct AP
 
 ---
 
-## 📹 Demo Videos
+### 💳 Card API
 
-### WebView Mode
-https://github.com/AbanobNabeh/paymob_flutter/raw/main/demo/Paymob_Webview.mp4
-
-### API Mode (Native UI)
-https://github.com/AbanobNabeh/paymob_flutter/raw/main/demo/Paymob_API.mp4
+![Card API Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/Card_API.gif)
 
 ---
 
-## ✨ What's New in 0.1.0
+### 🌐 Card WebView
 
-- ✅ Direct API card payment — no WebView required
-- ✅ Mobile Wallet support (Vodafone Cash, Orange Money, Etisalat, WE)
-- ✅ Kiosk support (Fawry / Aman) with bill reference
-- ✅ Dynamic bottom sheet — only shows available payment methods
-- ✅ `PaymentMode.api` or `PaymentMode.webview` — your choice
-- ✅ `PaymentResult` with `success`, `failed`, `pending`, `cancelled`
+![Card WebView Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/Card_webview.gif)
+
+---
+
+### 📱 Wallet Payment
+
+![Wallet Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/Wallet.gif)
+
+---
+
+### 🏧 Kiosk Payment
+
+![Kiosk Demo](https://raw.githubusercontent.com/AbanobNabeh/paymob_flutter/demo/kiosk.gif)
+
+## ✨ What's New in 0.1.3
+
+- ✅ Full dartdoc coverage — 160/160 pub points
+- ✅ Fixed `isSandbox` — now correctly switches between sandbox and production URLs
+- ✅ Replaced deprecated `withOpacity()` with `withValues(alpha:)` throughout
+- ✅ `tokenExpiration` — configure payment-key lifetime (default 3600 s)
+- ✅ `extraPaymentKeyData` — merge custom fields into the payment-key request
+- ✅ `extraOrderData` — merge custom fields into the order-registration request
+- ✅ `PaymobOrder.merchantOrderId` — link Paymob orders to your own order IDs
+- ✅ `PaymobOrder.deliveryNeeded` — control delivery flag per order
+- ✅ `OrderItem` — optional `description`, `sku`, `category`, and `extra` fields
+- ✅ `BillingData` — all address fields are now optional (default `'NA'`), plus `extra` map
+- ✅ `PaymobService` is now fully public with dartdocs for advanced use
 
 ---
 
@@ -41,7 +58,7 @@ https://github.com/AbanobNabeh/paymob_flutter/raw/main/demo/Paymob_API.mp4
 
 ```yaml
 dependencies:
-  paymob_flutter: ^0.1.0
+  paymob_flutter: ^0.1.3
 ```
 
 ---
@@ -166,6 +183,64 @@ Bottom sheet will show: **Card / Wallet / Kiosk**
 
 ---
 
+## ⚙️ Advanced Configuration
+
+### Token expiration
+
+```dart
+PaymobConfig(
+  apiKey: 'YOUR_API_KEY',
+  integrationId: 123456,
+  iframeId: 789,
+  tokenExpiration: 7200, // 2 hours instead of the default 1 hour
+)
+```
+
+### Extra request fields
+
+Inject any custom or undocumented Paymob field without modifying the SDK:
+
+```dart
+PaymobConfig(
+  apiKey: 'YOUR_API_KEY',
+  integrationId: 123456,
+  iframeId: 789,
+  extraPaymentKeyData: {'lock_order_when_paid': true},
+  extraOrderData: {'notes': 'VIP customer'},
+)
+```
+
+### Merchant order ID
+
+Link Paymob orders back to your own order IDs for reconciliation:
+
+```dart
+PaymobOrder(
+  amount: 150.0,
+  currency: 'EGP',
+  merchantOrderId: 'MY-ORDER-001',
+  items: [OrderItem(name: 'Deposit', amount: 150.0, quantity: 1)],
+)
+```
+
+### Full BillingData example
+
+```dart
+BillingData(
+  firstName: 'Ahmed',
+  lastName: 'Mohamed',
+  email: 'ahmed@example.com',
+  phone: '+201234567890',
+  city: 'Cairo',
+  country: 'EGY',
+  street: 'Tahrir Square',
+  postalCode: '11511',
+  extra: {'custom_field': 'value'}, // any extra Paymob billing field
+)
+```
+
+---
+
 ## 🎯 Direct Methods
 
 ```dart
@@ -178,20 +253,23 @@ await Paymob.payWithWallet(context: context, config: config, order: order, billi
 // Kiosk only
 await Paymob.payWithKiosk(context: context, config: config, order: order, billing: billing);
 ```
-
+PaymobConfig 
 ---
 
 ## ⚙️ PaymobConfig Parameters
 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| apiKey | String | ✅ | Your Paymob API Key |
-| integrationId | int | ✅ | Card integration ID |
-| iframeId | int | ✅ | Iframe ID from dashboard |
-| walletIntegrationId | int? | ❌ | Wallet integration ID |
-| kioskIntegrationId | int? | ❌ | Kiosk integration ID |
-| isSandbox | bool | ❌ | Default: `true` |
-| paymentMode | PaymentMode | ❌ | `api` (default) or `webview` |
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| apiKey | String | ✅ | — | Your Paymob API Key |
+| integrationId | int | ✅ | — | Card integration ID |
+| iframeId | int | ✅ | — | Iframe ID from dashboard |
+| walletIntegrationId | int? | ❌ | null | Wallet integration ID |
+| kioskIntegrationId | int? | ❌ | null | Kiosk integration ID |
+| isSandbox | bool | ❌ | true | Switch between sandbox / production |
+| paymentMode | PaymentMode | ❌ | api | `api` (native UI) or `webview` |
+| tokenExpiration | int | ❌ | 3600 | Payment-key lifetime in seconds |
+| extraPaymentKeyData | Map? | ❌ | null | Extra fields for the payment-key request |
+| extraOrderData | Map? | ❌ | null | Extra fields for the order request |
 
 ---
 
@@ -202,7 +280,7 @@ await Paymob.payWithKiosk(context: context, config: config, order: order, billin
 | isSuccess | bool | Payment completed successfully |
 | isPending | bool | Kiosk reference generated / Wallet OTP sent |
 | isCancelled | bool | User cancelled |
-| transactionId | String? | Transaction ID or Kiosk reference |
+| transactionId | String? | Transaction ID or Kiosk bill reference |
 | errorMessage | String? | Error message if failed |
 | rawResponse | Map? | Full Paymob API response |
 

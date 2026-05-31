@@ -6,38 +6,59 @@ import '../models/paymob_exception.dart';
 import '../models/payment_result.dart';
 import '../models/wallet_type.dart';
 
+/// Low-level Paymob API client.
+///
+/// You rarely need to use this directly — prefer [Paymob.pay] and its
+/// targeted variants. Use [PaymobService] only when you need fine-grained
+/// control over individual API steps.
 class PaymobService {
+  /// The configuration used for all requests made by this instance.
   final PaymobConfig config;
+
   late final Dio _dio;
 
+  /// Creates a [PaymobService] bound to the given [config].
   PaymobService(this.config) {
     _dio = Dio(BaseOptions(
       baseUrl: config.baseUrl,
       contentType: 'application/json',
-      validateStatus: (status) => true,
+      validateStatus: (_) => true,
     ));
   }
 
+  // ─── Auth ────────────────────────────────────────────────────────────────
+
   Future<String> _getAuthToken() async {
-    final response = await _dio.post('/auth/tokens', data: {
-      'api_key': config.apiKey,
-    });
+    final response =
+        await _dio.post('/auth/tokens', data: {'api_key': config.apiKey});
     _assertSuccess(response, 'Auth failed');
-    return response.data['token'];
+    return response.data['token'] as String;
   }
 
+  // ─── Order ───────────────────────────────────────────────────────────────
+
   Future<int> _registerOrder(String token, PaymobOrder order) async {
-    final response = await _dio.post('/ecommerce/orders', data: {
+    print(
+        'Registering order with amount ${order.items.map((e) => e.toJson()).toList()} ${order.amountCents} ${order.items}');
+    final body = <String, dynamic>{
       'auth_token': token,
-      'delivery_needed': false,
-      'amount_cents': '${order.amountCents}',
+      'delivery_needed': order.deliveryNeeded == true,
+      'amount_cents': order.amountCents,
       'currency': order.currency,
-      'items': [],
-    });
+      'items': order.items.map((e) => e.toJson()).toList(),
+      if (order.merchantOrderId != null)
+        'merchant_order_id': order.merchantOrderId,
+      ...?order.extra,
+      ...?config.extraOrderData,
+    };
+    final response = await _dio.post('/ecommerce/orders', data: body);
+    print('Order registration response: ${response.statusCode}');
     _assertSuccess(response, 'Order registration failed');
     final id = response.data['id'];
     return id is int ? id : int.parse(id.toString());
   }
+
+  // ─── Payment Key ─────────────────────────────────────────────────────────
 
   Future<String> _getPaymentKey(
     String token,
@@ -46,28 +67,39 @@ class PaymobService {
     BillingData billing, {
     int? integrationId,
   }) async {
-    final response = await _dio.post('/acceptance/payment_keys', data: {
+    final body = <String, dynamic>{
       'auth_token': token,
       'amount_cents': '${order.amountCents}',
-      'expiration': 3600,
+      'expiration': config.tokenExpiration,
       'order_id': orderId,
       'billing_data': billing.toJson(),
       'currency': order.currency,
       'integration_id': integrationId ?? config.integrationId,
-    });
+      ...?config.extraPaymentKeyData,
+    };
+    final response = await _dio.post('/acceptance/payment_keys', data: body);
     _assertSuccess(response, 'Payment key request failed');
     return response.data['token'].toString();
   }
 
+  // ─── Card ─────────────────────────────────────────────────────────────────
+
+  /// Runs the Auth → Order → PaymentKey flow and returns the card payment token.
+  ///
+  /// Pass this token to [payWithCard] or to a WebView iframe.
   Future<String> getCardPaymentToken({
     required PaymobOrder order,
     required BillingData billing,
   }) async {
     final authToken = await _getAuthToken();
     final orderId = await _registerOrder(authToken, order);
-    return await _getPaymentKey(authToken, orderId, order, billing);
+    return _getPaymentKey(authToken, orderId, order, billing);
   }
 
+  /// Submits card details to the Paymob API and returns a [PaymentResult].
+  ///
+  /// [extraSourceData] is merged into the `source` object — use it for
+  /// 3DS or any additional fields required by your integration.
   Future<PaymentResult> payWithCard({
     required String paymentKey,
     required String cardNumber,
@@ -75,6 +107,7 @@ class PaymobService {
     required String expiryMonth,
     required String expiryYear,
     required String cvv,
+    Map<String, dynamic>? extraSourceData,
   }) async {
     final response = await _dio.post(
       '/acceptance/payments/pay',
@@ -87,28 +120,42 @@ class PaymobService {
           'expiry_month': expiryMonth.padLeft(2, '0'),
           'expiry_year': expiryYear.length == 2 ? '20$expiryYear' : expiryYear,
           'cvn': cvv,
+          ...?extraSourceData,
         },
         'payment_token': paymentKey,
       },
     );
     _assertSuccess(response, 'Card payment failed');
     final data = response.data as Map<String, dynamic>;
-    final success = data['success'] == true;
     final transactionId = data['id']?.toString() ?? '';
-    final pending = data['pending'] == true;
-    if (pending) return PaymentResult.pending(transactionId);
-    if (success) return PaymentResult.success(transactionId, raw: data);
-    return PaymentResult.failed(data['data']?['message'] ?? 'Payment failed');
+    if (data['pending'] == true) return PaymentResult.pending(transactionId);
+    if (data['success'] == true) {
+      return PaymentResult.success(transactionId, raw: data);
+    }
+    return PaymentResult.failed(
+        data['data']?['message']?.toString() ?? 'Payment failed');
   }
 
+  // ─── Wallet ───────────────────────────────────────────────────────────────
+
+  /// Runs the full Auth → Order → PaymentKey → Pay flow for mobile wallets.
+  ///
+  /// [walletType] is informational (used for UI only); the actual routing
+  /// is determined by the [phoneNumber] the user enters.
+  /// [extraSourceData] is merged into the `source` object.
+  ///
+  /// Returns the raw Paymob API response map so callers can inspect
+  /// the redirect URL or OTP status.
   Future<Map<String, dynamic>> initiateWalletPayment({
     required PaymobOrder order,
     required BillingData billing,
     required String phoneNumber,
     required WalletType walletType,
+    Map<String, dynamic>? extraSourceData,
   }) async {
     if (config.walletIntegrationId == null) {
-      throw const PaymobException(message: 'walletIntegrationId is required');
+      throw const PaymobException(
+          message: 'walletIntegrationId is required in PaymobConfig');
     }
     final authToken = await _getAuthToken();
     final orderId = await _registerOrder(authToken, order);
@@ -122,7 +169,11 @@ class PaymobService {
     final response = await _dio.post(
       '/acceptance/payments/pay',
       data: {
-        'source': {'identifier': phoneNumber, 'subtype': 'WALLET'},
+        'source': {
+          'identifier': phoneNumber,
+          'subtype': 'WALLET',
+          ...?extraSourceData,
+        },
         'payment_token': paymentKey,
       },
     );
@@ -130,12 +181,21 @@ class PaymobService {
     return response.data as Map<String, dynamic>;
   }
 
+  // ─── Kiosk ────────────────────────────────────────────────────────────────
+
+  /// Runs the full Auth → Order → PaymentKey → Pay flow for kiosk payments.
+  ///
+  /// Returns the Fawry / Aman bill reference number that the customer
+  /// presents at the kiosk to complete cash payment.
+  /// [extraSourceData] is merged into the `source` object.
   Future<String> initiateKioskPayment({
     required PaymobOrder order,
     required BillingData billing,
+    Map<String, dynamic>? extraSourceData,
   }) async {
     if (config.kioskIntegrationId == null) {
-      throw const PaymobException(message: 'kioskIntegrationId is required');
+      throw const PaymobException(
+          message: 'kioskIntegrationId is required in PaymobConfig');
     }
     final authToken = await _getAuthToken();
     final orderId = await _registerOrder(authToken, order);
@@ -149,7 +209,11 @@ class PaymobService {
     final response = await _dio.post(
       '/acceptance/payments/pay',
       data: {
-        'source': {'identifier': 'AGGREGATOR', 'subtype': 'AGGREGATOR'},
+        'source': {
+          'identifier': 'AGGREGATOR',
+          'subtype': 'AGGREGATOR',
+          ...?extraSourceData,
+        },
         'payment_token': paymentKey,
       },
     );
@@ -165,11 +229,14 @@ class PaymobService {
     return reference;
   }
 
-  void _assertSuccess(Response response, String message) {
-    print('=== Paymob === Status: ${response.statusCode} | ${response.data}');
+  // ─── Helper ───────────────────────────────────────────────────────────────
+
+  void _assertSuccess(Response<dynamic> response, String message) {
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw PaymobException(
-          message: '$message (${response.statusCode}): ${response.data}');
+        message: '$message (${response.statusCode}): ${response.data}',
+        statusCode: response.statusCode,
+      );
     }
   }
 }

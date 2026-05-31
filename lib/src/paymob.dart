@@ -3,7 +3,6 @@ import 'models/paymob_config.dart';
 import 'models/paymob_order.dart';
 import 'models/billing_data.dart';
 import 'models/payment_result.dart';
-
 import 'services/paymob_service.dart';
 import 'ui/card/card_payment_screen.dart';
 import 'ui/wallet/wallet_payment_screen.dart';
@@ -12,7 +11,30 @@ import 'widgets/paymob_payment_widget.dart';
 
 enum _PaymentMethod { card, wallet, kiosk }
 
+/// Entry point for all Paymob payment flows.
+///
+/// Use [pay] to show a bottom sheet that automatically lists only the payment
+/// methods enabled in your [PaymobConfig], or call the targeted helpers
+/// ([payWithCard], [payWithWallet], [payWithKiosk]) to skip the sheet.
+///
+/// ```dart
+/// final result = await Paymob.pay(
+///   context: context,
+///   config: config,
+///   order: order,
+///   billing: billing,
+/// );
+/// ```
 class Paymob {
+  Paymob._();
+
+  /// Shows the appropriate payment UI based on [config].
+  ///
+  /// * If only card integration is configured, goes straight to the card screen.
+  /// * If wallet or kiosk integrations are also configured, shows a bottom sheet
+  ///   so the user can choose their preferred method.
+  ///
+  /// Returns a [PaymentResult] regardless of outcome — never throws.
   static Future<PaymentResult> pay({
     required BuildContext context,
     required PaymobConfig config,
@@ -50,6 +72,10 @@ class Paymob {
     }
   }
 
+  /// Navigates directly to the card payment screen, skipping the method sheet.
+  ///
+  /// Uses [PaymentMode.webview] when [PaymobConfig.paymentMode] is set to
+  /// [PaymentMode.webview]; otherwise uses the native Flutter card form.
   static Future<PaymentResult> payWithCard({
     required BuildContext context,
     required PaymobConfig config,
@@ -85,10 +111,9 @@ class Paymob {
   }) async {
     try {
       final service = PaymobService(config);
-      final paymentKey = await service.getCardPaymentToken(
-        order: order,
-        billing: billing,
-      );
+      final paymentKey =
+          await service.getCardPaymentToken(order: order, billing: billing);
+
       if (!context.mounted) {
         return PaymentResult.failed('Context is no longer valid');
       }
@@ -107,6 +132,9 @@ class Paymob {
     }
   }
 
+  /// Navigates directly to the wallet payment screen, skipping the method sheet.
+  ///
+  /// Requires [PaymobConfig.walletIntegrationId] to be set.
   static Future<PaymentResult> payWithWallet({
     required BuildContext context,
     required PaymobConfig config,
@@ -128,6 +156,11 @@ class Paymob {
     return result ?? PaymentResult.cancelled();
   }
 
+  /// Navigates directly to the kiosk payment screen, skipping the method sheet.
+  ///
+  /// Requires [PaymobConfig.kioskIntegrationId] to be set.
+  /// Returns a [PaymentResult] with [PaymentResult.isPending] `true` and
+  /// [PaymentResult.transactionId] set to the Fawry / Aman bill reference.
   static Future<PaymentResult> payWithKiosk({
     required BuildContext context,
     required PaymobConfig config,
@@ -149,6 +182,8 @@ class Paymob {
     return result ?? PaymentResult.cancelled();
   }
 }
+
+// ─── Bottom sheet ──────────────────────────────────────────────────────────
 
 class _PaymentMethodSheet extends StatelessWidget {
   final PaymobConfig config;
@@ -178,24 +213,30 @@ class _PaymentMethodSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text('Choose Payment Method',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black87,
-              )),
+          Text(
+            'Choose Payment Method',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text('${order.amount} ${order.currency}',
-              style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF6C63FF))),
+          Text(
+            '${order.amount} ${order.currency}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF6C63FF),
+            ),
+          ),
           if (config.isWebView) ...[
             const SizedBox(height: 6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
@@ -241,10 +282,13 @@ class _PaymentMethodSheet extends StatelessWidget {
           const SizedBox(height: 6),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel',
-                style: TextStyle(
-                    color: isDark ? Colors.white54 : Colors.black45,
-                    fontSize: 14)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDark ? Colors.white54 : Colors.black45,
+                fontSize: 14,
+              ),
+            ),
           ),
         ],
       ),
@@ -285,7 +329,7 @@ class _MethodTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 22),
@@ -295,20 +339,29 @@ class _MethodTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: isDark ? Colors.white : Colors.black87)),
-                  Text(subtitle,
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: isDark ? Colors.white38 : Colors.black45)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? Colors.white38 : Colors.black45,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: isDark ? Colors.white24 : Colors.black26),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: isDark ? Colors.white24 : Colors.black26,
+            ),
           ],
         ),
       ),

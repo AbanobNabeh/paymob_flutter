@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paymob_flutter/paymob_flutter.dart';
+import 'package:paymob_flutter/src/services/paymob_service.dart';
 
 class CardPaymentScreen extends StatefulWidget {
   final PaymobConfig config;
@@ -405,7 +406,7 @@ class _CardPreview extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C63FF).withOpacity(0.4),
+            color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -446,7 +447,8 @@ class _CardPreview extends StatelessWidget {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                            color: Colors.orange.shade400.withOpacity(0.8),
+                            color:
+                                Colors.orange.shade400.withValues(alpha: 0.8),
                             shape: BoxShape.circle)),
                   ),
                 ]),
@@ -532,7 +534,7 @@ class _AmountBadge extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C63FF).withOpacity(0.12),
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.receipt_long_outlined,

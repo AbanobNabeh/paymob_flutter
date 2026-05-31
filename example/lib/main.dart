@@ -34,10 +34,10 @@ class _ProductScreenState extends State<ProductScreen> {
   bool? _isSuccess;
 
   final _config = PaymobConfig(
-    apiKey: 'YOUR_API_KEY',
+    apiKey: 'APIKEY',
     integrationId: 123123,
     walletIntegrationId: 123123,
-    kioskIntegrationId: null,
+    kioskIntegrationId: 123123,
     iframeId: 123123,
     isSandbox: false,
     paymentMode: PaymentMode.webview,

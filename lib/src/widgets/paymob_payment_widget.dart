@@ -35,14 +35,13 @@ class _PaymobPaymentWidgetState extends State<PaymobPaymentWidget> {
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageStarted: (_) => setState(() => _isLoading = true),
-        onPageFinished: (_) => setState(() => _isLoading = false),
-        onNavigationRequest: (request) {
-          _handleCallback(request.url);
-          return NavigationDecision.navigate;
-        },
-      ))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (url) {
+            setState(() => _isLoading = false);
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(url));
   }
 
