@@ -38,8 +38,6 @@ class PaymobService {
   // ─── Order ───────────────────────────────────────────────────────────────
 
   Future<int> _registerOrder(String token, PaymobOrder order) async {
-    print(
-        'Registering order with amount ${order.items.map((e) => e.toJson()).toList()} ${order.amountCents} ${order.items}');
     final body = <String, dynamic>{
       'auth_token': token,
       'delivery_needed': order.deliveryNeeded == true,
@@ -52,7 +50,6 @@ class PaymobService {
       ...?config.extraOrderData,
     };
     final response = await _dio.post('/ecommerce/orders', data: body);
-    print('Order registration response: ${response.statusCode}');
     _assertSuccess(response, 'Order registration failed');
     final id = response.data['id'];
     return id is int ? id : int.parse(id.toString());

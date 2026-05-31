@@ -1,6 +1,6 @@
 name: paymob_flutter
 description: A Flutter SDK for Paymob payment gateway. Supports Card (WebView & Direct API), Mobile Wallet (Vodafone Cash, Orange Money, Etisalat, WE), and Kiosk (Fawry / Aman) payments.
-version: 0.1.2
+version: 0.1.3
 homepage: https://github.com/AbanobNabeh/paymob_flutter
 
 environment:
