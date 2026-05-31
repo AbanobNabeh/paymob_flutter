@@ -1,3 +1,10 @@
+## 0.1.4
+
+### Added
+- Demo GIFs for all payment methods (Card API, Card WebView, Wallet, Kiosk)
+
+---
+
 ## 0.1.3
 
 ### Added
@@ -15,6 +22,8 @@
 - `isSandbox` now correctly switches the base URL between sandbox and production
 - Replaced all deprecated `Color.withOpacity()` calls with `Color.withValues(alpha:)`
 - `PaymobException.toString()` no longer appends `(status: null)` when status code is absent
+
+---
 
 ## 0.1.2
 
